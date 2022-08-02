@@ -3,9 +3,63 @@
 @tailwind components;
 @tailwind utilities;
 
-body{
+@primary:#beff82;
+@bg-color: #98e4ff;
+@txt-color: #934a4a;
+
+body {
     margin: 0;
     padding: 0;
     height: 100vh;
-    box-sizing: content-box;
+    // box-sizing: content-box;
+    // background-image: radial-gradient(circle farthest-corner at 92.3% 71.5%, @bg-color  0%, lighten(@bg-color, 10%) 90%);
+    background-image: radial-gradient(circle farthest-corner at 92.3% 71.5%, @bg-color  0, #fdffca 90%);
+    background-size: 200% 200%;
+    overflow: hidden;
+    // animation: bg-animation 10s ease-in infinite;
+}
+
+@keyframes bg-animation {
+    0%, 100%{
+        background-position: 0% 0%;
+    }
+    20%{
+        background-position: 20% 10%;
+    }
+    50%{
+        background-position: 60% 30%;
+    }
+}
+
+/* Main Body Variables */
+
+@main-color: #ffffff;
+
+.gg-bg{
+    background: @main-color;
+}
+/* Scrollbar Variables */
+
+@scrollbar: #dadada;
+
+::-webkit-scrollbar {
+    width: 7px;
+    transition-duration: 0.2s;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+    background: lighten(@scrollbar, 35%);
+    border-radius: 2px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+    background: @scrollbar;
+    border-radius: 2px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+    background: darken(@scrollbar, 10%);
 }

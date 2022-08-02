@@ -1,3 +1,5 @@
-<p-fieldset legend="Start" class="w-full flex justify-center items-center h-full" [toggleable]="true">
-    <h1 class="text-5xl text-orange-500">This is the home</h1>
-</p-fieldset>
+<div *ngIf="users">
+  {{users | json}}
+</div>
+
+<button (click)="post()"> Crea utente </button>
