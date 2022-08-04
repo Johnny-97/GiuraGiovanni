@@ -1,4 +1,6 @@
 import { Component } from '@angular/core';
+import { Router } from '@angular/router';
+import { ConfirmationService } from 'primeng/api';
 
 @Component({
   selector: 'side-menu',
@@ -7,6 +9,8 @@ import { Component } from '@angular/core';
 })
 export class SideMenuComponent  {
 
+  isLogged:boolean;
+
   items: MenuItem[] = [
     {
       label: 'Home',
@@ -14,8 +18,8 @@ export class SideMenuComponent  {
       icon: 'pi pi-home'
     },
     {
-      label: 'Registrazione',
-      link: '/signup',
+      label: 'Post pubblicati',
+      link: '/posts',
       icon: 'pi pi-users'
     },
     {
@@ -25,8 +29,21 @@ export class SideMenuComponent  {
     },
   ];
 
-  constructor() { }
+  constructor(private confirm: ConfirmationService, private router: Router) {
+    this.isLogged= !!localStorage.getItem('BEARER');
+  }
 
+  logout(){
+    this.confirm.confirm({
+      message: 'Sei sicuro di voler procedere?',
+      header: 'Conferma',
+      icon: 'pi pi-exclamation-triangle',
+      accept:()=>{
+        localStorage.removeItem('BEARER');
+        this.router.navigateByUrl('/login');
+      }
+    });
+  }
 }
 
 interface MenuItem{

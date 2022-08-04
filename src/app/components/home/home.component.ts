@@ -1,38 +1,126 @@
-import { Component, OnInit } from '@angular/core';
-import { MessageService } from 'primeng/api';
-import { Observable } from 'rxjs';
+import {
+  ChangeDetectionStrategy,
+  ChangeDetectorRef,
+  Component,
+  OnInit,
+} from '@angular/core';
+import { FormControl } from '@angular/forms';
+import { Title } from '@angular/platform-browser';
+import { ConfirmationService, MessageService } from 'primeng/api';
+import { DialogService } from 'primeng/dynamicdialog';
+import { map, Observable, of, switchMap, tap } from 'rxjs';
+import { GoRestResponse, GoRestUser } from 'src/app/interfaces';
 import { GoRestService } from 'src/app/services/go-rest.service';
+import { AddUserModalComponent } from '../add-user-modal/add-user-modal.component';
 
 @Component({
   selector: 'gg-home',
   templateUrl: './home.component.html',
-  styleUrls: ['./home.component.less']
+  styleUrls: ['./home.component.less'],
 })
 export class HomeComponent implements OnInit {
+  users$?: Observable<GoRestUser[]>;
+  filteredUsers$?: Observable<GoRestUser[]>;
+  columns: Column[] = [
+    {
+      label: 'Nome',
+      transform: (a) => a.name!,
+    },
+    {
+      label: 'E-Mail',
+      transform: (a) => a.email!,
+    },
+    {
+      label: 'Sesso',
+      transform: (a) => (a.gender === 'male' ? 'Uomo' : 'Donna'),
+    },
+    {
+      label: 'Attivo',
+      transform: (a) => (a.status === 'active' ? 'Si' : 'No'),
+    },
+  ];
 
-  users?: any;
+  search = new FormControl('', { nonNullable: true });
 
-  constructor(private rest: GoRestService, private message: MessageService) { }
+  constructor(
+    private rest: GoRestService,
+    private message: MessageService,
+    private dialog: DialogService,
+    private confirm: ConfirmationService,
+    title: Title
+  ) {
+    title.setTitle('Home Page');
+  }
 
   ngOnInit(): void {
-    this.rest.getUsers().subscribe(res=>{
-      this.users=res;
+    this.users$ = this.rest.getUsers().pipe(map((res) => res.data));
+    this.filteredUsers$ = this.users$;
+  }
+
+  delete(event: Event, user: GoRestUser) {
+    this.confirm.confirm({
+      target: event.target!,
+      message: 'Sei sicuro di voler procedere? Questa azione è irreversibile',
+      icon: 'pi pi-exclamation-triangle',
+      accept: () => {
+        this.rest
+          .deleteUser(user)
+          .pipe(
+            tap(() => {
+              this.filteredUsers$ = this.rest
+                .getUsers()
+                .pipe(map((res) => res.data));
+            })
+          )
+          .subscribe();
+      },
     });
   }
 
-  post(){
-    this.rest.postUser({
-      name: 'Giovanni',
-      gender:'Male',
-      email: 'giurag.d@gmail.com',
-      status: 'Active'
-    }).subscribe(res=>{
-      if(res.code === 422){
-        this.message.add({severity:'error', summary: 'Errore', detail: 'Email '+res.data[0].message});
-      }else{
-        this.message.add({severity:'success', summary: 'Successo', detail: 'Utente aggiunto con successo'});
-      }
-    });
+  openModal() {
+    this.dialog
+      .open(AddUserModalComponent, {
+        header: 'Aggiungi utente',
+        width: '80%',
+        contentStyle: { 'max-height': '70vh', overflow: 'auto' },
+        baseZIndex: 2,
+      })
+      .onClose.pipe(
+        switchMap((user: GoRestUser) => {
+          if (user) {
+            return this.rest.postUser(user);
+          } else {
+            return of({
+              code: 404,
+            } as GoRestResponse<any>);
+          }
+        }),
+        map((res) => {
+          if (res.code !== 404) {
+            if (res.code === 422) {
+              this.message.add({
+                severity: 'error',
+                summary: 'Errore',
+                detail: 'Email ' + res.data[0].message,
+              });
+            } else {
+              this.message.add({
+                severity: 'success',
+                summary: 'Successo',
+                detail: 'Utente aggiunto con successo',
+              });
+              this.filteredUsers$ = this.rest
+                .getUsers()
+                .pipe(map((response) => response.data));
+            }
+          }
+        })
+      )
+      .subscribe();
   }
+}
 
+interface Column {
+  label: string;
+  transform: (a: GoRestUser) => string;
 }

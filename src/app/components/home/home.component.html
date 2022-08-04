@@ -1,5 +1,30 @@
-<div *ngIf="users">
-  {{users | json}}
+<div class="flex justify-between">
+    <div class="p-input-icon-left w-1/2 mb-5">
+        <i class="pi pi-search"></i>
+        <input type="text" pInputText placeholder="Cerca utenti per Nome o E-mail" class="w-full"/>
+    </div>
+    
+    <gg-button (click)="openModal()" type="info" class="text-right"><i class="pi pi-plus"></i></gg-button>
 </div>
-
-<button (click)="post()"> Crea utente </button>
+<p-table [value]="(filteredUsers$ | async)!" [rows]="20">
+  <ng-template pTemplate="header">
+    <tr>
+        <th *ngFor="let col of columns">
+            {{col.label}}
+        </th>
+        <th>
+            Azioni
+        </th>
+    </tr>
+</ng-template>
+<ng-template pTemplate="body" let-user>
+    <tr>
+        <td *ngFor="let col of columns; let i = index">
+                {{columns[i].transform(user)}}
+        </td>
+        <td>
+            <gg-button type="danger" (click)="delete($event, user)"><i class="pi pi-trash"></i></gg-button>
+        </td>
+    </tr>
+</ng-template>
+</p-table>

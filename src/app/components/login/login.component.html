@@ -1,0 +1,8 @@
+<div class="text-center p-4">
+    <p class="text-lg">Per usufruire della piattaforma è necessario ottenere uno speciale Access Token che viene generato e fornito al seguente
+        <a href="https://gorest.co.in/my-account/access-tokens" target="_blank">link</a> <br>
+        Una volta che sarà stato effettuato l'accesso su GoRest sarà possibile ottenere l'Access Token
+    </p>
+    <input type="text" class="p-inputtext-lg rounded-md w-full" placeholder="Bearer Token"  pInputText [formControl]="bearer" />
+    <gg-button type="info" class="mt-5" [disabled]="bearer.invalid" (click)="test()">Verifica chiave</gg-button>
+</div>
