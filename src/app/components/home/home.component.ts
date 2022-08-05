@@ -1,14 +1,17 @@
-import {
-  ChangeDetectionStrategy,
-  ChangeDetectorRef,
-  Component,
-  OnInit,
-} from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { FormControl } from '@angular/forms';
 import { Title } from '@angular/platform-browser';
 import { ConfirmationService, MessageService } from 'primeng/api';
 import { DialogService } from 'primeng/dynamicdialog';
-import { map, Observable, of, switchMap, tap } from 'rxjs';
+import {
+  debounceTime,
+  distinctUntilChanged,
+  map,
+  Observable,
+  of,
+  switchMap,
+  tap,
+} from 'rxjs';
 import { GoRestResponse, GoRestUser } from 'src/app/interfaces';
 import { GoRestService } from 'src/app/services/go-rest.service';
 import { AddUserModalComponent } from '../add-user-modal/add-user-modal.component';
@@ -54,6 +57,24 @@ export class HomeComponent implements OnInit {
 
   ngOnInit(): void {
     this.users$ = this.rest.getUsers().pipe(map((res) => res.data));
+
+    this.search.valueChanges
+      .pipe(
+        debounceTime(500),
+        distinctUntilChanged(),
+        map((search) => search.toLowerCase())
+      )
+      .subscribe((search) => {
+        this.filteredUsers$ = this.users$?.pipe(
+          map((users) =>
+            users.filter(
+              (user) =>
+                user.email?.toLowerCase().includes(search) ||
+                user.name?.toLowerCase().includes(search)
+            )
+          )
+        );
+      });
     this.filteredUsers$ = this.users$;
   }
 
@@ -67,9 +88,8 @@ export class HomeComponent implements OnInit {
           .deleteUser(user)
           .pipe(
             tap(() => {
-              this.filteredUsers$ = this.rest
-                .getUsers()
-                .pipe(map((res) => res.data));
+              this.users$ = this.rest.getUsers().pipe(map((res) => res.data));
+              this.search.setValue('');
             })
           )
           .subscribe();
@@ -109,7 +129,7 @@ export class HomeComponent implements OnInit {
                 summary: 'Successo',
                 detail: 'Utente aggiunto con successo',
               });
-              this.filteredUsers$ = this.rest
+              this.users$ = this.rest
                 .getUsers()
                 .pipe(map((response) => response.data));
             }

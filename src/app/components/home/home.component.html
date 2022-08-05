@@ -1,7 +1,7 @@
 <div class="flex justify-between">
     <div class="p-input-icon-left w-1/2 mb-5">
         <i class="pi pi-search"></i>
-        <input type="text" pInputText placeholder="Cerca utenti per Nome o E-mail" class="w-full"/>
+        <input type="text" [formControl]="search" pInputText placeholder="Cerca utenti per Nome o E-mail" class="w-full"/>
     </div>
     
     <gg-button (click)="openModal()" type="info" class="text-right"><i class="pi pi-plus"></i></gg-button>
